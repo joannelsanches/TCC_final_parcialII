@@ -1,0 +1,62 @@
+<details class="card spaced">
+  <summary>Registrar aditivo assinado</summary>
+  <p class="muted">
+    Registre no dia de início dos efeitos. Confira o PDF, a aprovação das partes e as condições
+    acadêmicas antes de salvar. O TCE original será preservado.
+  </p>
+  <form
+    method="post"
+    enctype="multipart/form-data"
+    action="/termos/<%= termo._id %>/aditivos"
+    class="form-grid"
+  >
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+    <% [['dataEfeito','Início dos efeitos (hoje)','','date'],['periodoFim','Novo fim do estágio',termo.periodo?.fim?.toISOString().slice(0,10),'date'],['cargaDiaria','Horas diárias',termo.jornada?.cargaDiaria,'number'],['cargaSemanal','Horas semanais',termo.jornada?.cargaSemanal,'number'],['horarioInicio','Horário inicial',termo.jornada?.horarioInicio,'time'],['horarioFim','Horário final',termo.jornada?.horarioFim,'time'],['bolsa','Bolsa (R$)',termo.bolsa,'number'],['auxilioTransporte','Auxílio-transporte (R$)',termo.auxilioTransporte,'number'],['seguroVigenciaFim','Fim da cobertura do seguro',termo.seguro?.vigenciaFim?.toISOString().slice(0,10),'date']].forEach(([nome,label,valor,tipo]) => { %><label class="field"
+      ><%= label %><input
+        name="<%= nome %>"
+        type="<%= tipo %>"
+        value="<%= valor ?? '' %>"
+        <%- tipo === 'number' ? 'min="0" step="0.01"' : '' %>
+        required /></label
+    ><% }) %>
+    <label class="field full"
+      >Plano atualizado<textarea name="planoAtividades" required>
+<%= termo.planoAtividades %></textarea
+      ></label
+    ><label class="field full"
+      >Justificativa<textarea name="justificativa" required></textarea>
+    </label>
+    <label class="field"
+      >Aditivo assinado (PDF)<input
+        name="aditivo"
+        type="file"
+        accept="application/pdf"
+        required /></label
+    ><label class="field"
+      >Autorização excepcional, quando aplicável (PDF)<input
+        name="autorizacao"
+        type="file"
+        accept="application/pdf"
+    /></label>
+    <label class="field"
+      >Apólice atualizada, se mudar a cobertura (PDF)<input
+        name="apolice"
+        type="file"
+        accept="application/pdf"
+    /></label>
+    <% [['Estudante','Estudante'],['Empresa','Concedente'],['Instituicao','Instituição'],['Responsavel','Responsável legal, se menor']].forEach(([chave,label]) => { %>
+    <fieldset class="field">
+      <legend><%= label %></legend>
+      <label>Nome<input name="assinatura<%= chave %>Nome" /></label
+      ><label>Função<input name="assinatura<%= chave %>Funcao" /></label
+      ><label>Data<input name="assinatura<%= chave %>Data" type="date" /></label>
+    </fieldset>
+    <% }) %>
+    <% [['compatibilidadeCursoPpc','Compatibilidade de atividades e PPC'],['jornadaHorarioEscolar','Horários, dias e jornada compatíveis'],['recessoPrevisto','Recesso proporcional e benefícios conferidos'],['frequenciaRendimento','Frequência e aprovação de pelo menos 60% na renovação'],['periodoSemAulas','Para 40h: alternância prevista no PPC e ausência de aulas'],['prorrogacaoAutorizada','Exceção autorizada: prorrogação do obrigatório até 18 meses'],['necessidadesEspecificas','Exceção institucional documentada para necessidades específicas']].forEach(([nome,label]) => { %><label class="check-card"
+      ><input name="<%= nome %>" type="checkbox" /><span
+        ><%= label %></span
+      ></label
+    ><% }) %>
+    <div class="field full"><button class="btn">Registrar aditivo</button></div>
+  </form>
+</details>

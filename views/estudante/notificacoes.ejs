@@ -1,0 +1,61 @@
+<%- include('../partials/cabecalho', { titulo: 'Notificações' }) %>
+
+<section class="section">
+  <div class="container">
+    <div class="section-heading page-heading-actions">
+      <div class="page-header page-header-left">
+        <span class="eyebrow">Central de avisos</span>
+        <h1>Notificações</h1>
+        <p class="muted">Atualizações sobre vagas, candidaturas, documentos e termos.</p>
+      </div>
+      <a class="btn btn-secondary" href="/preferencias/notificacoes">Gerenciar canais</a>
+      <% if (contagens.nao_lidas > 0) { %>
+      <form method="post" action="/notificacoes/marcar-todas-lidas">
+        <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+        <button class="btn btn-secondary">Marcar todas como lidas</button>
+      </form>
+      <% } %>
+    </div>
+
+    <nav class="filter-tabs" aria-label="Filtrar notificações">
+      <a class="<%= status === 'todas' ? 'active' : '' %>" href="/notificacoes?status=todas"
+        >Todas <span><%= contagens.todas %></span></a
+      >
+      <a class="<%= status === 'nao_lidas' ? 'active' : '' %>" href="/notificacoes?status=nao_lidas"
+        >Não lidas <span><%= contagens.nao_lidas %></span></a
+      >
+      <a class="<%= status === 'lidas' ? 'active' : '' %>" href="/notificacoes?status=lidas"
+        >Lidas <span><%= contagens.lidas %></span></a
+      >
+    </nav>
+
+    <div class="stack notification-list">
+      <% notificacoes.forEach(notificacao => { %>
+      <article class="card notification <%= notificacao.lida ? '' : 'nao-lida' %>">
+        <div class="notification-content">
+          <div class="section-heading">
+            <h2><%= notificacao.titulo %></h2>
+            <span class="badge <%= notificacao.lida ? '' : 'aberta' %>"><%= notificacao.lida ? 'LIDA' : 'NOVA' %></span>
+          </div>
+          <p><%= notificacao.mensagem %></p>
+          <div class="channel-status">
+            <% const estadosEmail = { PENDENTE: 'Na fila', PROCESSANDO: 'Processando', ACEITO: 'Aceito pelo servidor', ENVIADO: 'Enviado', ENTREGUE: 'Entregue', LIDO: 'Lido', FALHA_RETRY: 'Nova tentativa prevista', FALHA: 'Falha no envio', NAO_CONFIGURADO: 'Envio indisponível', DESATIVADO: 'Desativado', INCERTO: 'Resultado não confirmado', CANCELADO: 'Aviso cancelado' }; %>
+            <small><strong>E-mail:</strong> <%= estadosEmail[notificacao.email?.status] || 'Histórico anterior' %></small>
+          </div>
+          <time class="muted" datetime="<%= new Date(notificacao.data).toISOString() %>"><%= formatarData(notificacao.data) %></time>
+        </div>
+        <form method="post" action="/notificacoes/<%= notificacao._id %>/ler">
+          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+          <button class="btn btn-small btn-secondary"><%= notificacao.lida ? 'Abrir' : 'Marcar como lida e abrir' %></button>
+        </form>
+      </article>
+      <% }) %>
+    </div>
+
+    <% if (!notificacoes.length) { %>
+    <div class="empty"><%= status === 'nao_lidas' ? 'Você não possui notificações não lidas.' : status === 'lidas' ? 'Você ainda não possui notificações lidas.' : 'Você não tem notificações.' %></div>
+    <% } %>
+  </div>
+</section>
+
+<%- include('../partials/rodape') %>

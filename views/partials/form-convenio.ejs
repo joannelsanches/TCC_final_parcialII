@@ -1,0 +1,243 @@
+<%
+  const registro = typeof convenio !== 'undefined' && convenio ? convenio : null;
+  const dados = typeof valores !== 'undefined' && valores ? valores : {};
+  const falhas = typeof erros !== 'undefined' && erros ? erros : {};
+  const editandoConvenio = Boolean(registro);
+  const valorConvenio = (campo, atual = '') => Object.prototype.hasOwnProperty.call(dados, campo) ? dados[campo] : (atual ?? '');
+  const dataConvenio = (campo, atual) => {
+    const valor = valorConvenio(campo, atual);
+    const data = new Date(valor);
+    return valor && Number.isFinite(data.getTime()) ? data.toISOString().slice(0, 10) : '';
+  };
+  const assinatura = (papel) => registro?.assinaturas?.find((item) => item.papel === papel) || {};
+  const assinaturaEmpresa = assinatura('EMPRESA');
+  const assinaturaInstituicao = assinatura('INSTITUICAO');
+%>
+
+<% if (falhas.geral) { %>
+<div class="alert erro" role="alert"><%= falhas.geral %></div>
+<% } %>
+
+<form
+  method="post"
+  action="<%= acaoForm %>"
+  enctype="multipart/form-data"
+  class="form-grid"
+>
+  <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+  <div class="field <%= falhas.empresa ? 'field-invalid' : '' %>">
+    <label for="empresa">Empresa *</label>
+    <select id="empresa" name="empresa" required aria-invalid="<%= falhas.empresa ? 'true' : 'false' %>">
+      <option value="">Selecione</option>
+      <% empresas.forEach((empresa) => { %>
+      <option value="<%= empresa._id %>" <%= String(valorConvenio('empresa', registro?.empresa?._id || registro?.empresa)) === String(empresa._id) ? 'selected' : '' %>>
+        <%= formatarNomeProprio(empresa.nomeFantasia) %>
+      </option>
+      <% }) %>
+    </select>
+    <% if (falhas.empresa) { %><small class="field-error"><%= falhas.empresa %></small
+    ><% } %>
+  </div>
+
+  <div class="field <%= falhas.numero ? 'field-invalid' : '' %>">
+    <label for="numero">Número do convênio</label>
+    <input
+      id="numero"
+      name="numero"
+      value="<%= valorConvenio('numero', registro?.numero) %>"
+      aria-invalid="<%= falhas.numero ? 'true' : 'false' %>"
+    />
+    <small class="help">Pode ficar vazio somente enquanto o registro for rascunho.</small>
+    <% if (falhas.numero) { %><small class="field-error"><%= falhas.numero %></small
+    ><% } %>
+  </div>
+
+  <div class="field <%= falhas.dataInicial ? 'field-invalid' : '' %>">
+    <label for="dataInicial">Data inicial</label>
+    <input
+      id="dataInicial"
+      type="date"
+      name="dataInicial"
+      value="<%= dataConvenio('dataInicial', registro?.dataInicial) %>"
+      aria-invalid="<%= falhas.dataInicial ? 'true' : 'false' %>"
+    />
+    <% if (falhas.dataInicial) { %><small class="field-error"><%= falhas.dataInicial %></small
+    ><% } %>
+  </div>
+
+  <div class="field <%= falhas.dataFinal ? 'field-invalid' : '' %>">
+    <label for="dataFinal">Data final</label>
+    <input
+      id="dataFinal"
+      type="date"
+      name="dataFinal"
+      value="<%= dataConvenio('dataFinal', registro?.dataFinal) %>"
+      aria-invalid="<%= falhas.dataFinal ? 'true' : 'false' %>"
+    />
+    <% if (falhas.dataFinal) { %><small class="field-error"><%= falhas.dataFinal %></small
+    ><% } %>
+  </div>
+
+  <% if (editandoConvenio) { %>
+  <div class="field">
+    <label for="status">Situação</label>
+    <select id="status" name="status">
+      <% ['RASCUNHO','AGUARDANDO_ASSINATURAS','PENDENTE','ATIVO','REPROVADO','INATIVO','VENCIDO'].forEach((item) => { %>
+      <option value="<%= item %>" <%= valorConvenio('status', registro.status) === item ? 'selected' : '' %>>
+        <%= rotuloStatusConvenio(item) %>
+      </option>
+      <% }) %>
+    </select>
+    <small class="help">Alterações importantes em um convênio ativo exigem nova validação.</small>
+    <% if (falhas.status) { %><small class="field-error"><%= falhas.status %></small
+    ><% } %>
+  </div>
+  <div class="field">
+    <label for="justificativa">Justificativa ou observação</label>
+    <input id="justificativa" name="justificativa" value="<%= valorConvenio('justificativa', registro.justificativa) %>" />
+  </div>
+  <% } %>
+
+  <div class="field full form-section-title">
+    <h3>Documento enviado para assinatura</h3>
+    <small class="help"
+      >PDF preparado pelo administrador para a empresa baixar e assinar fora do StartIF.</small
+    >
+  </div>
+  <div class="field full <%= falhas.documentoParaAssinatura ? 'field-invalid' : '' %>">
+    <label for="documentoParaAssinatura"><%= registro?.documentoParaAssinatura?.caminho ? 'Substituir documento preparado' : 'Documento preparado' %></label>
+    <input
+      id="documentoParaAssinatura"
+      type="file"
+      name="documentoParaAssinatura"
+      accept="application/pdf,.pdf"
+      aria-invalid="<%= falhas.documentoParaAssinatura ? 'true' : 'false' %>"
+    />
+    <% if (registro?.documentoParaAssinatura?.caminho) { %><small class="help"
+      >Atual:
+      <a href="/convenios/<%= registro._id %>/documento-assinatura"
+        ><%= registro.documentoParaAssinatura.nomeOriginal %></a
+      ></small
+    ><% } %>
+    <% if (falhas.documentoParaAssinatura) { %><small class="field-error"><%= falhas.documentoParaAssinatura %></small
+    ><% } %>
+  </div>
+
+  <div class="field full form-section-title">
+    <h3>Documento assinado devolvido pela empresa</h3>
+    <small class="help"
+      >É um arquivo diferente do documento preparado. Só deve conter o PDF efetivamente
+      assinado.</small
+    >
+  </div>
+  <div class="field full <%= falhas.pdfAssinado ? 'field-invalid' : '' %>">
+    <label for="pdfAssinado"><%= registro?.pdfAssinado?.caminho ? 'Substituir documento assinado' : 'Documento assinado' %></label>
+    <input
+      id="pdfAssinado"
+      type="file"
+      name="pdfAssinado"
+      accept="application/pdf,.pdf"
+      aria-invalid="<%= falhas.pdfAssinado ? 'true' : 'false' %>"
+    />
+    <% if (registro?.pdfAssinado?.caminho) { %><small class="help"
+      >Atual:
+      <a href="/convenios/<%= registro._id %>/pdf-assinado"><%= registro.pdfAssinado.nomeOriginal %></a></small
+    ><% } %>
+    <% if (falhas.pdfAssinado) { %><small class="field-error"><%= falhas.pdfAssinado %></small
+    ><% } %>
+  </div>
+
+  <div class="field full form-section-title"><h3>Signatário da empresa</h3></div>
+  <div class="field">
+    <label for="signatarioEmpresaNome">Nome</label>
+    <input
+      id="signatarioEmpresaNome"
+      name="signatarioEmpresaNome"
+      value="<%= valorConvenio('signatarioEmpresaNome', assinaturaEmpresa.nome || registro?.pdfAssinado?.nomeSignatario) %>"
+    />
+  </div>
+  <div class="field">
+    <label for="signatarioEmpresaFuncao">Função</label>
+    <input
+      id="signatarioEmpresaFuncao"
+      name="signatarioEmpresaFuncao"
+      value="<%= valorConvenio('signatarioEmpresaFuncao', assinaturaEmpresa.funcao || registro?.pdfAssinado?.funcaoSignatario) %>"
+    />
+  </div>
+  <div class="field">
+    <label for="signatarioEmpresaEntidade">Entidade</label>
+    <input
+      id="signatarioEmpresaEntidade"
+      name="signatarioEmpresaEntidade"
+      value="<%= valorConvenio('signatarioEmpresaEntidade', assinaturaEmpresa.entidade || registro?.empresa?.razaoSocial) %>"
+    />
+  </div>
+  <div class="field">
+    <label for="signatarioEmpresaData">Data da assinatura</label>
+    <input
+      id="signatarioEmpresaData"
+      name="signatarioEmpresaData"
+      type="date"
+      value="<%= dataConvenio('signatarioEmpresaData', assinaturaEmpresa.dataAssinatura || registro?.pdfAssinado?.dataAssinatura) %>"
+    />
+  </div>
+
+  <div class="field full form-section-title"><h3>Signatário da instituição</h3></div>
+  <div class="field">
+    <label for="signatarioInstituicaoNome">Nome</label>
+    <input
+      id="signatarioInstituicaoNome"
+      name="signatarioInstituicaoNome"
+      value="<%= valorConvenio('signatarioInstituicaoNome', assinaturaInstituicao.nome) %>"
+    />
+  </div>
+  <div class="field">
+    <label for="signatarioInstituicaoFuncao">Função</label>
+    <input
+      id="signatarioInstituicaoFuncao"
+      name="signatarioInstituicaoFuncao"
+      value="<%= valorConvenio('signatarioInstituicaoFuncao', assinaturaInstituicao.funcao) %>"
+    />
+  </div>
+  <div class="field">
+    <label for="signatarioInstituicaoEntidade">Entidade</label>
+    <input
+      id="signatarioInstituicaoEntidade"
+      name="signatarioInstituicaoEntidade"
+      value="<%= valorConvenio('signatarioInstituicaoEntidade', assinaturaInstituicao.entidade || process.env.INSTITUICAO_NOME || '') %>"
+    />
+  </div>
+  <div class="field">
+    <label for="signatarioInstituicaoData">Data da assinatura</label>
+    <input
+      id="signatarioInstituicaoData"
+      name="signatarioInstituicaoData"
+      type="date"
+      value="<%= dataConvenio('signatarioInstituicaoData', assinaturaInstituicao.dataAssinatura) %>"
+    />
+  </div>
+  <% if (falhas.assinaturas) { %>
+  <div class="field full"><small class="field-error"><%= falhas.assinaturas %></small></div>
+  <% } %>
+
+  <% if (editandoConvenio) { %>
+  <div class="field full">
+    <label for="observacaoHistorico">Observação para o histórico</label>
+    <textarea id="observacaoHistorico" name="observacaoHistorico"><%= valorConvenio('observacaoHistorico') %></textarea>
+  </div>
+  <div class="field full form-actions">
+    <button class="btn" type="submit">Salvar alterações</button
+    ><a class="btn btn-secondary" href="/admin/convenios/<%= registro._id %>">Cancelar</a>
+  </div>
+  <% } else { %>
+  <div class="field full form-actions">
+    <button class="btn btn-secondary" name="acao" value="rascunho" formnovalidate>
+      Salvar rascunho
+    </button>
+    <button class="btn btn-secondary" name="acao" value="aguardar_assinaturas">
+      Enviar para assinatura
+    </button>
+    <button class="btn" name="acao" value="enviar">Enviar para análise</button>
+  </div>
+  <% } %>
+</form>

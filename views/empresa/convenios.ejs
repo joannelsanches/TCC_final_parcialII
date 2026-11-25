@@ -1,0 +1,56 @@
+<%- include('../partials/cabecalho', { titulo: 'Meus convênios' }) %>
+
+<section class="section">
+  <div class="container">
+    <div class="page-header page-header-left">
+      <span class="eyebrow">Relação com o IFSul</span>
+      <h1>Meus convênios</h1>
+      <p class="muted">
+        Baixe o documento preparado, acompanhe a vigência e devolva o PDF assinado com segurança.
+      </p>
+    </div>
+
+    <nav class="filter-tabs" aria-label="Filtros de convênios">
+      <% [['andamento','Em andamento'],['ativos','Ativos'],['inativos','Inativos e vencidos'],['todos','Todos']].forEach(([chave, rotulo]) => { %>
+      <a
+        href="/empresa/convenios?grupo=<%= chave %>"
+        class="<%= grupo === chave ? 'active' : '' %>"
+        <%= grupo === chave ? 'aria-current="page"' : '' %>
+        ><%= rotulo %> <span><%= contagens[chave] %></span></a
+      >
+      <% }) %>
+    </nav>
+
+    <div class="agreement-list">
+      <% convenios.forEach((convenio) => { %>
+      <article class="card agreement-card">
+        <div class="agreement-summary">
+          <div>
+            <h2>Convênio <%= convenio.numero || 'em preparação' %></h2>
+            <p class="muted"><%= formatarData(convenio.dataInicial) %> a <%= formatarData(convenio.dataFinal) %></p>
+          </div>
+          <span class="badge <%= convenio.status.toLowerCase() %>"><%= rotuloStatusConvenio(convenio.status) %></span>
+        </div>
+        <div class="agreement-files">
+          <div><strong>Documento para assinatura</strong><%= convenio.documentoParaAssinatura?.caminho ? 'Disponível' : 'Pendente' %></div>
+          <div><strong>Documento assinado</strong><%= convenio.pdfAssinado?.caminho ? 'Enviado' : 'Pendente' %></div>
+        </div>
+        <% if (convenio.justificativa) { %>
+        <p class="alert aviso"><strong>Justificativa:</strong> <%= convenio.justificativa %></p>
+        <% } %>
+        <div class="actions">
+          <a class="btn btn-small" href="/empresa/convenios/<%= convenio._id %>"
+            >Visualizar convênio</a
+          >
+        </div>
+      </article>
+      <% }) %>
+    </div>
+
+    <% if (!convenios.length) { %>
+    <div class="empty">Nenhum convênio encontrado neste grupo.</div>
+    <% } %>
+  </div>
+</section>
+
+<%- include('../partials/rodape') %>

@@ -1,0 +1,30 @@
+<%- include('../partials/cabecalho', { titulo: 'Conta e acesso' }) %>
+<section class="section">
+  <div class="container narrow">
+    <div class="card form-card stack">
+      <span class="eyebrow">Seu acesso ao StartIF</span>
+      <h1>Conta e acesso</h1>
+      <p><strong>Nome:</strong> <%= conta.nome %></p>
+      <p><strong>E-mail cadastrado:</strong> <%= conta.email %></p>
+      <% if (erros.geral) { %><p class="alert erro" role="alert"><%= erros.geral %></p><% } %>
+      <% if (conta.google?.sub) { %>
+        <div class="alert sucesso">Google vinculado a <strong><%= conta.google.email %></strong>.</div>
+        <p class="help">O vínculo mantém seu perfil e suas permissões atuais.</p>
+      <% } else if (googleDisponivel) { %>
+        <p>Para vincular o Google, confirme sua senha e escolha a conta Google com o mesmo e-mail cadastrado.</p>
+        <form method="post" action="/conta/google/vincular" class="stack">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <div class="field">
+            <label for="senha-vinculo">Senha atual</label>
+            <input id="senha-vinculo" name="senha" type="password" autocomplete="current-password" required>
+          </div>
+          <button class="btn btn-google">Vincular conta Google</button>
+        </form>
+      <% } else { %>
+        <p class="alert aviso">A vinculação com Google está indisponível no momento.</p>
+      <% } %>
+      <a class="back-link" href="<%= conta.tipo === 'ADMIN' ? '/admin' : conta.tipo === 'EMPRESA' ? '/empresa/perfil' : '/estudante/perfil' %>">Voltar ao meu perfil</a>
+    </div>
+  </div>
+</section>
+<%- include('../partials/rodape') %>

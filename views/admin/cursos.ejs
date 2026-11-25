@@ -1,0 +1,307 @@
+<%- include('../partials/cabecalho', { titulo: 'Cursos' }) %>
+
+<%
+  const fonte = Object.keys(valores || {}).length ? valores : (edicao || {});
+  const regras = fonte.regrasEstagio || {};
+  const idsAreas = new Set(
+    (Array.isArray(fonte.areasRelacionadas) ? fonte.areasRelacionadas : [fonte.areasRelacionadas])
+      .filter(Boolean)
+      .map(area => String(area?._id || area))
+  );
+  const idCampus = String(fonte.campus?._id || fonte.campus || '');
+  const valorRegra = (nome, padrao) => {
+    if (Object.prototype.hasOwnProperty.call(valores || {}, nome)) return valores[nome];
+    return regras[nome] ?? padrao;
+  };
+  const marcado = (nome, padrao = false) => {
+    if (Object.keys(valores || {}).length) return valores[nome] === 'on';
+    return regras[nome] ?? padrao;
+  };
+  const areasFormulario = areas.filter(area => area.ativo || idsAreas.has(String(area._id)));
+%>
+
+<section class="section">
+  <div class="container">
+    <div class="page-header page-heading-actions">
+      <div class="page-header-left">
+        <a class="back-link" href="/admin/cadastros">← Cadastros institucionais</a>
+        <h1>Cursos</h1>
+        <p class="muted">
+          Configure as áreas relacionadas e as regras institucionais aplicadas aos estágios.
+        </p>
+      </div>
+    </div>
+
+    <% if (erros?.geral) { %>
+    <div class="alert erro" role="alert"><%= erros.geral %></div>
+    <% } %>
+
+    <section class="card institutional-form" aria-labelledby="form-curso-titulo">
+      <div class="section-heading">
+        <div>
+          <h2 id="form-curso-titulo"><%= edicao ? 'Editar curso' : 'Novo curso' %></h2>
+          <p class="muted">Campos com * são obrigatórios.</p>
+        </div>
+        <% if (edicao) { %><a class="btn btn-small btn-secondary" href="/admin/cursos"
+          >Cancelar edição</a
+        ><% } %>
+      </div>
+
+      <form
+        method="post"
+        action="<%= edicao ? `/admin/cursos/${edicao._id}/editar` : '/admin/cursos' %>"
+        class="form-grid"
+        data-required-checks="areasRelacionadas"
+      >
+        <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+        <div class="field <%= erros?.nome ? 'field-invalid' : '' %>">
+          <label for="curso-nome">Nome *</label>
+          <input
+            id="curso-nome"
+            name="nome"
+            value="<%= fonte.nome || '' %>"
+            required
+            aria-invalid="<%= erros?.nome ? 'true' : 'false' %>"
+            <%= erros?.nome ? 'aria-describedby="erro-curso-nome"' : '' %>
+          />
+          <% if (erros?.nome) { %><small class="field-error" id="erro-curso-nome"
+            ><%= erros.nome %></small
+          ><% } %>
+        </div>
+
+        <div class="field <%= erros?.nivel ? 'field-invalid' : '' %>">
+          <label for="curso-nivel">Nível *</label>
+          <select id="curso-nivel" name="nivel" required aria-invalid="<%= erros?.nivel ? 'true' : 'false' %>">
+            <option value="">Selecione</option>
+            <% ['TÉCNICO', 'SUPERIOR', 'PÓS-GRADUAÇÃO'].forEach(nivel => { %>
+            <option value="<%= nivel %>" <%= fonte.nivel === nivel ? 'selected' : '' %>>
+              <%= nivel %>
+            </option>
+            <% }) %>
+          </select>
+          <% if (erros?.nivel) { %><small class="field-error"><%= erros.nivel %></small
+          ><% } %>
+        </div>
+
+        <div class="field full campus-fixed">
+          <span class="field-label">Instituição</span><strong>IFSul — Campus Bagé</strong>
+        </div>
+
+        <div class="field full">
+          <label for="ppc-fonte">Link institucional do PPC conferido</label>
+          <input
+            id="ppc-fonte"
+            type="url"
+            name="fontePpc"
+            value="<%= valorRegra('fontePpc', '') %>"
+          /><% if (erros.fontePpc) { %><small class="field-error"><%= erros.fontePpc %></small
+          ><% } %>
+        </div>
+        <div class="field">
+          <label for="ppc-data">Data da conferência do PPC</label>
+          <input
+            id="ppc-data"
+            type="date"
+            name="dataConferenciaPpc"
+            value="<%= valores.dataConferenciaPpc ?? regras.dataConferenciaPpc?.toISOString?.().slice(0, 10) ?? '' %>"
+          />
+        </div>
+        <div class="field">
+          <label for="carga-minima">Carga mínima do obrigatório (horas)</label>
+          <input
+            id="carga-minima"
+            name="cargaHorariaObrigatoriaMinima"
+            type="number"
+            min="0"
+            value="<%= valorRegra('cargaHorariaObrigatoriaMinima', 0) %>"
+          />
+        </div>
+        <div class="field full">
+          <label for="pre-requisito">Pré-requisito acadêmico do obrigatório no PPC</label>
+          <input
+            id="pre-requisito"
+            name="preRequisitoObrigatorio"
+            value="<%= valorRegra('preRequisitoObrigatorio', '') %>"
+          />
+        </div>
+        <div class="field">
+          <label for="curso-periodo">Período mínimo obrigatório *</label>
+          <input
+            id="curso-periodo"
+            name="periodoMinimoObrigatorio"
+            type="number"
+            min="1"
+            max="20"
+            value="<%= valorRegra('periodoMinimoObrigatorio', 1) %>"
+            required
+          /><% if (erros?.periodoMinimoObrigatorio) { %><small class="field-error"><%= erros.periodoMinimoObrigatorio %></small
+          ><% } %>
+        </div>
+        <div class="field">
+          <label for="curso-diaria">Carga diária máxima *</label>
+          <input
+            id="curso-diaria"
+            name="cargaHorariaDiariaMaxima"
+            type="number"
+            min="1"
+            max="8"
+            value="<%= valorRegra('cargaHorariaDiariaMaxima', 6) %>"
+            required
+          /><% if (erros?.cargaHorariaDiariaMaxima) { %><small class="field-error"><%= erros.cargaHorariaDiariaMaxima %></small
+          ><% } %>
+        </div>
+        <div class="field">
+          <label for="curso-semanal">Carga semanal máxima *</label>
+          <input
+            id="curso-semanal"
+            name="cargaHorariaSemanalMaxima"
+            type="number"
+            min="1"
+            max="40"
+            value="<%= valorRegra('cargaHorariaSemanalMaxima', 30) %>"
+            required
+          /><% if (erros?.cargaHorariaSemanalMaxima) { %><small class="field-error"><%= erros.cargaHorariaSemanalMaxima %></small
+          ><% } %>
+        </div>
+
+        <div class="field full <%= erros?.areasRelacionadas ? 'field-invalid' : '' %>">
+          <label for="busca-area-curso">Áreas relacionadas *</label>
+          <input
+            id="busca-area-curso"
+            class="checkbox-search"
+            type="search"
+            placeholder="Buscar área"
+            data-checkbox-search="areas-curso"
+            autocomplete="off"
+          />
+          <div class="check-grid compact" data-checkbox-list="areas-curso">
+            <% areasFormulario.forEach(area => { %>
+            <label class="check-card" data-checkbox-item="<%= area.nome.toLocaleLowerCase('pt-BR') %>">
+              <input
+                type="checkbox"
+                name="areasRelacionadas"
+                value="<%= area._id %>"
+                data-group-required="areas-curso"
+                <%= idsAreas.has(String(area._id)) ? 'checked' : '' %>
+              />
+              <span
+                ><%= area.nome %><% if (!area.ativo) { %><small
+                  >Área inativa já vinculada</small
+                ><% } %></span
+              >
+            </label>
+            <% }) %>
+          </div>
+          <% if (!areasFormulario.length) { %><small class="field-error"
+            >Cadastre e ative uma área antes de criar o curso.</small
+          ><% } %>
+          <% if (erros?.areasRelacionadas) { %><small class="field-error"><%= erros.areasRelacionadas %></small
+          ><% } %>
+        </div>
+
+        <div class="field full">
+          <strong>Regras do curso</strong>
+          <div class="check-grid compact">
+            <label class="check-card"
+              ><input type="checkbox" name="exigeConvenio" <%= marcado('exigeConvenio', false) ? 'checked' : '' %> /><span
+                >Exige convênio vigente</span
+              ></label
+            >
+            <label class="check-card"
+              ><input
+                type="checkbox"
+                name="permiteEstagioObrigatorio"
+                <%= marcado('permiteEstagioObrigatorio', true) ? 'checked' : '' %>
+              /><span>Aceita estágio obrigatório</span></label
+            >
+            <label class="check-card"
+              ><input
+                type="checkbox"
+                name="permiteEstagioNaoObrigatorio"
+                <%= marcado('permiteEstagioNaoObrigatorio', true) ? 'checked' : '' %>
+              /><span>Aceita estágio não obrigatório</span></label
+            >
+            <label class="check-card"
+              ><input type="checkbox" name="permiteJornada40h" <%= marcado('permiteJornada40h') ? 'checked' : '' %> /><span
+                >Permite 40 horas conforme PPC</span
+              ></label
+            >
+            <label class="check-card"
+              ><input type="checkbox" name="ativo" <%= Object.keys(valores || {}).length ? (valores.ativo === 'on' ? 'checked' : '') : (edicao?.ativo !== false ? 'checked' : '') %> /><span
+                >Curso ativo</span
+              ></label
+            >
+          </div>
+        </div>
+
+        <div class="field full form-actions">
+          <button class="btn"><%= edicao ? 'Salvar alterações' : 'Cadastrar curso' %></button>
+          <% if (edicao) { %><a class="btn btn-secondary" href="/admin/cursos"
+            >Cancelar</a
+          ><% } %>
+        </div>
+      </form>
+    </section>
+
+    <section class="admin-register-section" aria-labelledby="lista-cursos-titulo">
+      <div class="section-heading">
+        <div>
+          <h2 id="lista-cursos-titulo">Cursos cadastrados</h2>
+          <p class="muted"><%= cursos.length %> registro<%= cursos.length === 1 ? '' : 's' %>.</p>
+        </div>
+      </div>
+      <div class="course-list">
+        <% cursos.forEach(curso => { %>
+        <article class="card course-card">
+          <div class="record-summary">
+            <div>
+              <h3><%= curso.nome %></h3>
+              <p class="muted"><%= curso.nivel %> · <%= curso.campus?.nome || 'Campus não encontrado' %></p>
+            </div>
+            <span class="badge <%= curso.ativo ? 'ativo' : 'inativo' %>"><%= curso.ativo ? 'Ativo' : 'Inativo' %></span>
+          </div>
+          <div class="job-meta" aria-label="Áreas relacionadas">
+            <% (curso.areasRelacionadas || []).forEach(area => { %><span class="tag"><%= area.nome %></span
+            ><% }) %>
+          </div>
+          <div class="details-grid course-rules">
+            <div><strong>Período mínimo</strong><%= curso.regrasEstagio?.periodoMinimoObrigatorio || 1 %>º</div>
+            <div><strong>Máximo diário</strong><%= curso.regrasEstagio?.cargaHorariaDiariaMaxima || 6 %>h</div>
+            <div><strong>Máximo semanal</strong><%= curso.regrasEstagio?.cargaHorariaSemanalMaxima || 30 %>h</div>
+          </div>
+          <div class="actions card-footer-actions">
+            <a
+              class="btn btn-small btn-secondary"
+              href="/admin/cursos/<%= curso._id %>/editar"
+              >Editar</a
+            >
+            <form method="post" action="/admin/cadastros/curso/<%= curso._id %>/alternar">
+              <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" /><button
+                class="btn btn-small btn-secondary"
+              >
+                <%= curso.ativo ? 'Desativar' : 'Ativar' %>
+              </button>
+            </form>
+            <form
+              method="post"
+              action="/admin/cadastros/curso/<%= curso._id %>/excluir"
+              data-confirmar="Excluir este curso permanentemente?"
+            >
+              <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" /><button
+                class="btn btn-small btn-danger"
+              >
+                Excluir
+              </button>
+            </form>
+          </div>
+        </article>
+        <% }) %>
+        <% if (!cursos.length) { %>
+        <div class="empty">Nenhum curso cadastrado.</div>
+        <% } %>
+      </div>
+    </section>
+  </div>
+</section>
+
+<%- include('../partials/rodape') %>

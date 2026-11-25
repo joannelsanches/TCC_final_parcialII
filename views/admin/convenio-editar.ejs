@@ -1,0 +1,29 @@
+<%- include('../partials/cabecalho', { titulo: 'Editar convênio' }) %>
+
+<section class="section">
+  <div class="container">
+    <a class="back-link" href="/admin/convenios/<%= convenio._id %>">← Voltar aos detalhes</a>
+    <div class="page-header page-header-left">
+      <span class="eyebrow">Edição administrativa</span>
+      <h1>Editar convênio</h1>
+      <p class="muted">
+        Dados importantes alterados em um convênio ativo obrigam uma nova validação. Os documentos
+        anteriores permanecem no histórico. Alterações contratuais exigem documento preparado
+        atualizado e novas assinaturas.
+      </p>
+    </div>
+
+    <div class="card form-card">
+      <%- include('../partials/form-convenio', {
+        convenio,
+        empresas,
+        acaoForm: `/admin/convenios/${convenio._id}/editar`,
+        erros,
+        valores,
+        rotuloStatusConvenio
+      }) %>
+    </div>
+  </div>
+</section>
+
+<%- include('../partials/rodape') %>

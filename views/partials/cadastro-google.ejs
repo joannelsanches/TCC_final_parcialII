@@ -1,0 +1,10 @@
+<% if (!googleCadastro) { %>
+  <div class="cadastro-google">
+    <a class="btn btn-google" href="/auth/google?tipo=<%= tipoCadastro %>">Cadastrar com Google</a>
+    <p class="help">Ou preencha o cadastro abaixo com e-mail e senha.</p>
+  </div>
+<% } else { %>
+  <div class="alert sucesso" role="status">
+    Identidade Google confirmada. Complete os dados abaixo para criar sua conta no StartIF.
+  </div>
+<% } %>

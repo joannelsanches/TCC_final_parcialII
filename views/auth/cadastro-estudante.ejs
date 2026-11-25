@@ -1,0 +1,141 @@
+<%- include('../partials/cabecalho', { titulo: 'Cadastro de estudante' }) %>
+
+<section class="section">
+  <div class="container">
+    <div class="page-header">
+      <h1>Cadastro de estudante</h1>
+      <p class="muted">Use seu e-mail institucional e dados acadêmicos.</p>
+    </div>
+
+    <div class="card form-card">
+      <%- include('../partials/cadastro-google', { tipoCadastro: 'ESTUDANTE' }) %>
+      <% if (erros?.geral) { %>
+      <div class="alert erro" role="alert"><%= erros.geral %></div>
+      <% } %>
+      <% if (!cursos.length) { %>
+      <div class="alert erro">
+        Os cursos de Bagé ainda não foram disponibilizados pelo administrador.
+      </div>
+      <% } %>
+      <form
+        method="post"
+        class="form-grid"
+        action="<%= googleCadastro ? '/auth/google/completar' : '/cadastro/estudante' %>"
+      >
+        <% if (googleCadastro) { %>
+          <input type="hidden" name="tipo" value="ESTUDANTE">
+        <% } %>
+        <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+        <div class="field full <%= erros?.nome ? 'field-invalid' : '' %>">
+          <label for="nome">Nome completo *</label>
+          <input
+            id="nome"
+            name="nome"
+            value="<%= valores?.nome || '' %>"
+            <%= googleCadastro ? 'readonly' : '' %>
+            required
+            aria-invalid="<%= erros?.nome ? 'true' : 'false' %>"
+          />
+          <% if (erros?.nome) { %>
+            <small class="field-error"><%= erros.nome %></small>
+          <% } %>
+        </div>
+        <div class="field <%= erros?.email ? 'field-invalid' : '' %>">
+          <label for="email">E-mail institucional *</label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            value="<%= valores?.email || '' %>"
+            <%= googleCadastro ? 'readonly' : '' %>
+            required
+            aria-invalid="<%= erros?.email ? 'true' : 'false' %>"
+          />
+          <% if (erros?.email) { %>
+            <small class="field-error"><%= erros.email %></small>
+          <% } %>
+        </div>
+        <div class="field <%= erros?.matricula ? 'field-invalid' : '' %>">
+          <label for="matricula">Matrícula *</label>
+          <input
+            id="matricula"
+            name="matricula"
+            value="<%= valores?.matricula || '' %>"
+            required
+            aria-invalid="<%= erros?.matricula ? 'true' : 'false' %>"
+          />
+          <% if (erros?.matricula) { %>
+            <small class="field-error"><%= erros.matricula %></small>
+          <% } %>
+        </div>
+        <div class="field <%= erros?.cpf ? 'field-invalid' : '' %>">
+          <label for="cpf">CPF *</label>
+          <input
+            id="cpf"
+            name="cpf"
+            value="<%= valores?.cpf || '' %>"
+            inputmode="numeric"
+            maxlength="14"
+            required
+            aria-invalid="<%= erros?.cpf ? 'true' : 'false' %>"
+          />
+          <% if (erros?.cpf) { %>
+            <small class="field-error"><%= erros.cpf %></small>
+          <% } %>
+        </div>
+        <div class="field <%= erros?.curso ? 'field-invalid' : '' %>">
+          <label for="curso">Curso *</label>
+<select id="curso" name="curso" required aria-invalid="<%= erros?.curso ? 'true' : 'false' %>">
+            <option value="">Selecione</option>
+            <% cursos.forEach(c => { %>
+            <option value="<%= c._id %>" <%= String(valores?.curso || '') === String(c._id) ? 'selected' : '' %>>
+              <%= c.nome %>
+            </option>
+            <% }) %></select>
+<% if (erros?.curso) { %>
+            <small class="field-error"><%= erros.curso %></small>
+          <% } %>
+        </div>
+        <div class="field campus-fixed">
+          <span class="field-label">Instituição</span><strong>IFSul — Campus Bagé</strong>
+        </div>
+        <% if (!googleCadastro) { %>
+        <div class="field <%= erros?.senha ? 'field-invalid' : '' %>">
+          <label for="senha">Senha *</label>
+          <input
+            id="senha"
+            name="senha"
+            type="password"
+            minlength="8"
+            required
+            aria-invalid="<%= erros?.senha ? 'true' : 'false' %>"
+          /><small class="help">Mínimo de 8 caracteres.</small>
+<% if (erros?.senha) { %>
+            <small class="field-error"><%= erros.senha %></small>
+          <% } %>
+        </div>
+        <div class="field <%= erros?.confirmarSenha ? 'field-invalid' : '' %>">
+          <label for="confirmarSenha">Confirmar senha *</label>
+          <input
+            id="confirmarSenha"
+            name="confirmarSenha"
+            type="password"
+            minlength="8"
+            required
+            aria-invalid="<%= erros?.confirmarSenha ? 'true' : 'false' %>"
+          />
+          <% if (erros?.confirmarSenha) { %>
+            <small class="field-error"><%= erros.confirmarSenha %></small>
+          <% } %>
+        </div>
+        <% } %>
+        <div class="field full">
+          <button class="btn" <%= !cursos.length ? 'disabled' : '' %>>Criar conta</button>
+        </div>
+        <%- include('../partials/preferencias-notificacao') %>
+      </form>
+    </div>
+  </div>
+</section>
+
+<%- include('../partials/rodape') %>

@@ -1,0 +1,110 @@
+<%- include('../partials/cabecalho', { titulo: 'Convênios' }) %>
+
+<section class="section">
+  <div class="container container-wide">
+    <div class="section-heading page-heading-actions">
+      <div class="page-header page-header-left">
+        <span class="eyebrow">Relações institucionais</span>
+        <h1>Convênios</h1>
+        <p class="muted">
+          Acompanhe o documento preparado, a devolução assinada e a validação institucional sem
+          misturar os arquivos.
+        </p>
+      </div>
+      <a class="btn btn-secondary" href="/admin/empresas">Ver empresas</a>
+    </div>
+
+    <nav class="filter-tabs" aria-label="Filtros de convênios">
+      <% [['andamento','Em andamento'],['ativos','Ativos'],['inativos','Inativos e vencidos'],['todos','Todos']].forEach(([chave, rotulo]) => { %>
+      <a
+        href="/admin/convenios?grupo=<%= chave %>"
+        class="<%= grupo === chave ? 'active' : '' %>"
+        <%= grupo === chave ? 'aria-current="page"' : '' %>
+        ><%= rotulo %> <span><%= contagens[chave] %></span></a
+      >
+      <% }) %>
+    </nav>
+
+    <details class="card form-card agreement-create" <%= Object.keys(erros || {}).length ? 'open' : '' %>>
+      <summary><strong>Novo convênio</strong></summary>
+      <p class="muted">
+        Salve como rascunho, envie o PDF preparado para assinatura ou registre um documento já
+        devolvido.
+      </p>
+      <% if (Object.keys(erros || {}).length) { %>
+      <p class="field-error" role="alert">Corrija os campos indicados antes de continuar.</p>
+      <% } %>
+      <div class="spaced">
+        <%- include('../partials/form-convenio', { convenio: null, empresas, acaoForm: '/admin/convenios', erros, valores, rotuloStatusConvenio }) %>
+      </div>
+    </details>
+
+    <div class="agreement-list spaced">
+      <% convenios.forEach((convenio) => { %>
+      <article class="card agreement-card">
+        <div class="agreement-summary">
+          <div>
+            <h2><%= formatarNomeProprio(convenio.empresa?.nomeFantasia || 'Empresa não encontrada') %></h2>
+            <p class="muted">
+              Nº <%= convenio.numero || 'a definir' %> · <%= formatarData(convenio.dataInicial) %> a <%= formatarData(convenio.dataFinal) %>
+            </p>
+          </div>
+          <span class="badge <%= convenio.status.toLowerCase() %>"><%= rotuloStatusConvenio(convenio.status) %></span>
+        </div>
+
+        <div class="agreement-files">
+          <div>
+            <strong>Documento enviado para assinatura</strong>
+            <% if (convenio.documentoParaAssinatura?.caminho) { %><a
+              href="/convenios/<%= convenio._id %>/documento-assinatura"
+              >Disponível</a
+            ><% } else { %><span class="muted">Não anexado</span
+            ><% } %>
+          </div>
+          <div>
+            <strong>Documento assinado devolvido</strong>
+            <% if (convenio.pdfAssinado?.caminho) { %><a href="/convenios/<%= convenio._id %>/pdf-assinado"
+              >Disponível</a
+            ><% } else { %><span class="muted">Não recebido</span
+            ><% } %>
+          </div>
+        </div>
+
+        <% if (convenio.regularizacaoPendente) { %>
+        <p class="process-note">
+          <strong>Regularização pendente.</strong> Confira o PDF final e os signatários.
+        </p>
+        <% } %>
+        <% if (convenio.justificativa) { %>
+        <p class="alert aviso"><strong>Justificativa:</strong> <%= convenio.justificativa %></p>
+        <% } %>
+
+        <div class="actions table-actions">
+          <a class="btn btn-small" href="/admin/convenios/<%= convenio._id %>">Visualizar</a>
+          <% if (!convenio.arquivado) { %><a
+            class="btn btn-small btn-secondary"
+            href="/admin/convenios/<%= convenio._id %>/editar"
+            >Editar</a
+          ><% } %>
+          <% if (!convenio.arquivado && typeof podeGerenciarExclusoes !== 'undefined' && podeGerenciarExclusoes) { %>
+          <form
+            method="post"
+            action="/admin/convenios/<%= convenio._id %>/excluir"
+            data-confirmar="Excluir este convênio? Documentos assinados e processos existentes serão preservados por arquivamento. A ação só será concluída se não houver dependências."
+          >
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+            <button class="btn btn-small btn-danger">Excluir</button>
+          </form>
+          <% } %>
+        </div>
+      </article>
+      <% }) %>
+    </div>
+
+    <% if (!convenios.length) { %>
+    <div class="empty">Nenhum convênio encontrado neste grupo.</div>
+    <% } %>
+  </div>
+</section>
+
+<%- include('../partials/rodape') %>

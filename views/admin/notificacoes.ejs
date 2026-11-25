@@ -1,0 +1,64 @@
+<%- include('../partials/cabecalho', { titulo: 'Notificações institucionais' }) %>
+
+<section class="section">
+  <div class="container">
+    <div class="page-header">
+      <h1>Enviar notificação institucional</h1>
+      <p class="muted">Envie para todos, por perfil ou por curso.</p>
+    </div>
+
+    <div class="card form-card">
+      <form method="post" class="form-grid">
+        <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+
+        <div class="field">
+          <label for="admin-notificacoes-publico-0">Público</label>
+
+          <select id="admin-notificacoes-publico-0" name="publico" required>
+            <option value="TODOS">Todos os usuários</option>
+
+            <option value="ESTUDANTE">Todos os estudantes</option>
+
+            <option value="EMPRESA">Todas as empresas</option>
+
+            <option value="ADMIN">Administradores</option>
+
+            <option value="CURSO">Estudantes de um curso</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="admin-notificacoes-curso-1">Curso (quando aplicável)</label>
+
+          <select id="admin-notificacoes-curso-1" name="curso">
+            <option value="">Selecione</option>
+
+            <% cursos.forEach(c => { %>
+            <option value="<%= c._id %>"><%= c.nome %></option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="field full">
+          <label for="admin-notificacoes-titulo-2">Título</label>
+          <input id="admin-notificacoes-titulo-2" name="titulo" required />
+        </div>
+
+        <div class="field full">
+          <label for="admin-notificacoes-mensagem-3">Mensagem</label>
+          <textarea id="admin-notificacoes-mensagem-3" name="mensagem" required></textarea>
+        </div>
+
+        <div class="field full">
+          <label for="admin-notificacoes-link-4">Link relacionado</label>
+          <input id="admin-notificacoes-link-4" name="link" placeholder="/vagas" />
+        </div>
+
+        <label class="check-card field full"><input type="checkbox" name="enviarEmail" checked><span>Também enviar por e-mail a quem autorizou esse recebimento.</span></label>
+        <button class="btn">Enviar notificações</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<%- include('../partials/rodape') %>

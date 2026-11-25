@@ -1,0 +1,214 @@
+<%- include('../partials/cabecalho', { titulo: 'Detalhes do convênio' }) %>
+<%
+  const assinaturaEmpresa = convenio.assinaturas?.find((item) => item.papel === 'EMPRESA') || {};
+  const assinaturaInstituicao = convenio.assinaturas?.find((item) => item.papel === 'INSTITUICAO') || {};
+%>
+
+<section class="section">
+  <div class="container">
+    <a class="back-link" href="/admin/convenios">← Voltar aos convênios</a>
+    <div class="section-heading page-heading-actions">
+      <div class="page-header">
+        <span class="eyebrow">Convênio institucional</span>
+        <h1><%= formatarNomeProprio(convenio.empresa?.nomeFantasia || 'Empresa') %></h1>
+        <p class="muted">
+          Nº <%= convenio.numero || 'a definir' %> · <%= formatarData(convenio.dataInicial) %> a <%= formatarData(convenio.dataFinal) %>
+        </p>
+      </div>
+      <div class="status-group">
+        <span class="badge <%= convenio.status.toLowerCase() %>"><%= rotuloStatusConvenio(convenio.status) %></span>
+        <% if (!convenio.arquivado) { %><a
+          class="btn btn-small btn-secondary"
+          href="/admin/convenios/<%= convenio._id %>/editar"
+          >Editar</a
+        ><% } %>
+      </div>
+    </div>
+
+    <% if (convenio.regularizacaoPendente) { %>
+    <div class="alert aviso">
+      <strong>Regularização pendente:</strong> o convênio não sustenta novas aprovações até o PDF e
+      as assinaturas serem conferidos.
+    </div>
+    <% } %>
+    <% if (convenio.justificativa) { %>
+    <div class="alert erro"><strong>Justificativa:</strong> <%= convenio.justificativa %></div>
+    <% } %>
+
+    <div class="grid-2 agreement-detail-grid">
+      <article class="card">
+        <h2>Documento enviado para assinatura</h2>
+        <% if (convenio.documentoParaAssinatura?.caminho) { %>
+        <p><strong><%= convenio.documentoParaAssinatura.nomeOriginal %></strong></p>
+        <p class="muted">
+          Enviado em <%= formatarData(convenio.documentoParaAssinatura.dataEnvio || convenio.dataEnvioAssinatura) %><% const adminEnvio = convenio.documentoParaAssinatura.enviadoPor?.nome || convenio.enviadoParaAssinaturaPor?.nome; if (adminEnvio) { %>
+          por <%= formatarNomeProprio(adminEnvio) %><% } %>.
+        </p>
+        <a class="btn btn-secondary" href="/convenios/<%= convenio._id %>/documento-assinatura"
+          >Baixar documento preparado</a
+        >
+        <% } else { %>
+        <div class="empty compact-empty">Nenhum documento preparado foi anexado.</div>
+        <% } %>
+      </article>
+
+      <article class="card">
+        <h2>Documento assinado devolvido pela empresa</h2>
+        <% if (convenio.pdfAssinado?.caminho) { %>
+        <p><strong><%= convenio.pdfAssinado.nomeOriginal %></strong></p>
+        <p class="muted">
+          Recebido em <%= formatarData(convenio.pdfAssinado.dataRecebimento || convenio.dataRecebimentoDocumentoAssinado || convenio.pdfAssinado.dataEnvio) %><% const usuarioRetorno = convenio.pdfAssinado.enviadoPor?.nome || convenio.documentoAssinadoEnviadoPor?.nome; if (usuarioRetorno) { %>
+          de <%= formatarNomeProprio(usuarioRetorno) %><% } %>.
+        </p>
+        <a class="btn btn-secondary" href="/convenios/<%= convenio._id %>/pdf-assinado"
+          >Baixar documento assinado</a
+        >
+        <% } else { %>
+        <div class="empty compact-empty">A empresa ainda não devolveu o PDF assinado.</div>
+        <% } %>
+      </article>
+    </div>
+
+    <article class="card spaced">
+      <h2>Assinaturas registradas</h2>
+      <div class="details-grid">
+        <div><strong>Signatário da empresa</strong><%= assinaturaEmpresa.nome ? formatarNomeProprio(assinaturaEmpresa.nome) : 'Pendente' %></div>
+        <div><strong>Função</strong><%= assinaturaEmpresa.funcao || '—' %></div>
+        <div><strong>Data</strong><%= formatarData(assinaturaEmpresa.dataAssinatura) %></div>
+        <div><strong>Signatário da instituição</strong><%= assinaturaInstituicao.nome ? formatarNomeProprio(assinaturaInstituicao.nome) : 'Pendente' %></div>
+        <div><strong>Função</strong><%= assinaturaInstituicao.funcao || '—' %></div>
+        <div><strong>Data</strong><%= formatarData(assinaturaInstituicao.dataAssinatura) %></div>
+      </div>
+    </article>
+
+    <article class="card spaced">
+      <h2>Controle institucional</h2>
+      <div class="details-grid">
+        <div><strong>Enviado para assinatura</strong><%= formatarData(convenio.dataEnvioAssinatura || convenio.documentoParaAssinatura?.dataEnvio) %></div>
+        <div><strong>Documento recebido</strong><%= formatarData(convenio.dataRecebimentoDocumentoAssinado || convenio.pdfAssinado?.dataRecebimento) %></div>
+        <div><strong>Aprovado em</strong><%= formatarData(convenio.dataAprovacao) %></div>
+        <div><strong>Documento preparado por</strong><%= convenio.documentoParaAssinatura?.enviadoPor?.nome ? formatarNomeProprio(convenio.documentoParaAssinatura.enviadoPor.nome) : (convenio.enviadoParaAssinaturaPor?.nome ? formatarNomeProprio(convenio.enviadoParaAssinaturaPor.nome) : '—') %></div>
+        <div><strong>Aprovado por</strong><%= convenio.aprovadoPor?.nome ? formatarNomeProprio(convenio.aprovadoPor.nome) : '—' %></div>
+        <div><strong>Última alteração por</strong><%= convenio.ultimaAlteracaoPor?.nome ? formatarNomeProprio(convenio.ultimaAlteracaoPor.nome) : '—' %></div>
+      </div>
+    </article>
+
+    <article class="card spaced">
+      <h2>Ações disponíveis</h2>
+      <div class="actions">
+        <% if (convenio.documentoParaAssinatura?.caminho && ['RASCUNHO','REPROVADO','AGUARDANDO_ASSINATURAS','PENDENTE'].includes(convenio.status)) { %>
+        <form
+          method="post"
+          action="/admin/convenios/<%= convenio._id %>/enviar-assinatura"
+          data-confirmar="Enviar este documento para assinatura da empresa?"
+        >
+          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+          <button class="btn btn-secondary">Enviar para assinatura</button>
+        </form>
+        <% } %>
+        <% if (convenio.pdfAssinado?.caminho && ['RASCUNHO','AGUARDANDO_ASSINATURAS','REPROVADO'].includes(convenio.status)) { %>
+        <form method="post" action="/admin/convenios/<%= convenio._id %>/enviar-analise">
+          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" /><button class="btn">
+            Enviar para análise
+          </button>
+        </form>
+        <% } %>
+        <% if (convenio.status === 'PENDENTE') { %>
+        <form
+          method="post"
+          action="/admin/convenios/<%= convenio._id %>/status"
+          data-confirmar="Ativar este convênio após conferir o PDF e as assinaturas?"
+        >
+          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+          <input type="hidden" name="status" value="ATIVO" />
+          <button class="btn">Aprovar e ativar</button>
+        </form>
+        <form
+          method="post"
+          action="/admin/convenios/<%= convenio._id %>/status"
+          class="rejection-form"
+        >
+          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+          <input type="hidden" name="status" value="REPROVADO" />
+          <label class="sr-only" for="justificativa">Justificativa da reprovação</label>
+          <input
+            id="justificativa"
+            name="justificativa"
+            placeholder="Justificativa da reprovação"
+            required
+          />
+          <button class="btn btn-danger">Reprovar</button>
+        </form>
+        <% } %>
+        <% if (convenio.status === 'ATIVO') { %>
+        <form
+          method="post"
+          action="/admin/convenios/<%= convenio._id %>/status"
+          data-confirmar="Inativar este convênio?"
+        >
+          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+          <input type="hidden" name="status" value="INATIVO" />
+          <button class="btn btn-danger">Inativar</button>
+        </form>
+        <% } %>
+        <% if (!convenio.arquivado && typeof podeGerenciarExclusoes !== 'undefined' && podeGerenciarExclusoes) { %>
+        <form
+          method="post"
+          action="/admin/convenios/<%= convenio._id %>/excluir"
+          data-confirmar="Excluir este convênio? Documentos assinados e processos existentes serão preservados por arquivamento."
+        >
+          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+          <button class="btn btn-danger">Excluir</button>
+        </form>
+        <% } %>
+      </div>
+    </article>
+
+    <article class="card spaced">
+      <h2>Histórico completo</h2>
+      <% if (convenio.historicoStatus?.length) { %>
+      <ol class="history-list">
+        <% [...convenio.historicoStatus].reverse().forEach((item) => { %>
+        <li>
+          <div><strong><%= rotuloStatusConvenio(item.status) %></strong><time><%= formatarData(item.data) %></time></div>
+          <p>
+            <%= item.observacao || 'Alteração registrada.' %><% if (item.alteradoPor?.nome) { %>
+            — <%= formatarNomeProprio(item.alteradoPor.nome) %><% } %>
+          </p>
+        </li>
+        <% }) %>
+      </ol>
+      <% } else { %>
+      <div class="empty compact-empty">Nenhuma alteração registrada.</div>
+      <% } %>
+    </article>
+  </div>
+</section>
+
+<% if (convenio.revisoes?.length) { %>
+<section class="section">
+  <div class="container">
+    <h2>Versões preservadas</h2>
+    <div class="stack">
+      <% convenio.revisoes.forEach(revisao => { %>
+      <article class="card">
+        <strong><%= formatarData(revisao.data) %> · <%= revisao.motivo %></strong>
+        <p><%= revisao.dados?.numero || 'Sem número' %> · <%= revisao.dados?.status %></p>
+        <div class="actions">
+          <% if (revisao.dados?.documentoParaAssinatura?.caminho) { %><a
+            class="btn btn-secondary btn-small"
+            href="/convenios/<%= convenio._id %>/revisoes/<%= revisao._id %>/preparado"
+            >Baixar versão preparada</a
+          ><% } %><% if (revisao.dados?.pdfAssinado?.caminho) { %><a
+            class="btn btn-secondary btn-small"
+            href="/convenios/<%= convenio._id %>/revisoes/<%= revisao._id %>/assinado"
+            >Baixar versão assinada</a
+          ><% } %>
+        </div>
+      </article>
+      <% }) %>
+    </div>
+  </div>
+</section>
+<% } %>
+<%- include('../partials/rodape') %>

@@ -1,0 +1,14 @@
+<%
+  const preferenciasAtuais = typeof preferencias !== 'undefined' ? preferencias : {};
+  const temValores = Object.keys(valores || {}).length > 0;
+  const receberEmail = temValores ? valores.receberEmail === 'on' : preferenciasAtuais.email !== false;
+%>
+<fieldset class="notification-preferences field full">
+  <legend>Notificações por e-mail</legend>
+  <input type="hidden" name="preferenciasInformadas" value="1">
+  <label class="check-card">
+    <input type="checkbox" name="receberEmail" <%= receberEmail ? 'checked' : '' %>>
+    <span>Receber avisos de vagas e atualizações do estágio no meu e-mail cadastrado.</span>
+  </label>
+  <p class="help">Você pode mudar essa preferência. Os avisos internos continuam disponíveis.</p>
+</fieldset>

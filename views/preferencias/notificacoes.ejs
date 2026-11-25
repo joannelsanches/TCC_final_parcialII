@@ -1,0 +1,25 @@
+<%- include('../partials/cabecalho', { titulo: 'Preferências de notificações' }) %>
+<section class="section">
+  <div class="container narrow">
+    <div class="page-header">
+      <span class="eyebrow">Do seu jeito</span>
+      <h1>Suas notificações</h1>
+      <p class="muted">Escolha como acompanhar as oportunidades e seu estágio.</p>
+    </div>
+    <div class="card form-card">
+      <p><strong>E-mail cadastrado:</strong> <%= usuario.email %></p>
+      <% if (!smtp) { %>
+        <p class="alert aviso">O envio por e-mail está indisponível no momento. Acompanhe os avisos em Notificações.</p>
+      <% } %>
+      <% if (erros.geral) { %>
+        <div role="alert" class="alert erro"><%= erros.geral %></div>
+      <% } %>
+      <form class="stack" method="post" action="/preferencias/notificacoes">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <%- include('../partials/preferencias-notificacao', { preferencias: usuario.preferenciasNotificacao || {} }) %>
+        <button class="btn">Salvar preferências</button>
+      </form>
+    </div>
+  </div>
+</section>
+<%- include('../partials/rodape') %>

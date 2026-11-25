@@ -1,0 +1,27 @@
+<section class="profile-progress" aria-labelledby="progresso-perfil-titulo">
+  <div class="profile-progress-heading">
+    <div>
+      <span class="eyebrow">Um passo de cada vez</span>
+      <h2 id="progresso-perfil-titulo">Conclusão do perfil</h2>
+    </div>
+    <strong class="profile-progress-percent" aria-hidden="true"><%= conclusaoPerfil.percentual %>%</strong>
+  </div>
+  <progress
+    class="progress-track"
+    max="100"
+    value="<%= conclusaoPerfil.percentual %>"
+    aria-label="Conclusão do perfil"
+    aria-valuetext="<%= conclusaoPerfil.percentual %>% do perfil preenchido"
+    aria-describedby="progresso-perfil-descricao"
+  ><%= conclusaoPerfil.percentual %>%</progress>
+  <% if (conclusaoPerfil.faltantes.length) { %>
+    <p id="progresso-perfil-descricao" class="profile-progress-description">Complete os campos abaixo para apresentar melhor seu perfil.</p>
+    <ul class="profile-missing-fields" aria-label="Campos que faltam preencher">
+      <% conclusaoPerfil.faltantes.forEach(campo => { %>
+        <li><%= campo %></li>
+      <% }) %>
+    </ul>
+  <% } else { %>
+    <p id="progresso-perfil-descricao" class="profile-progress-description">Tudo pronto: seus dados de perfil estão completos.</p>
+  <% } %>
+</section>

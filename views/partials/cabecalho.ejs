@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title><%= typeof titulo !== 'undefined' ? titulo + ' | StartIF' : 'StartIF' %></title>
+    <script src="/js/tema.js"></script>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#conteudo-principal">Pular para o conteúdo</a>
+    <header class="site-header">
+      <div class="container nav">
+        <a class="logo" href="/" aria-label="StartIF — Página inicial" title="Ir para a página inicial">
+          <img
+            src="/images/startif-logo-horizontal.png"
+            alt="StartIF"
+            width="2172"
+            height="724"
+            decoding="async"
+            fetchpriority="high"
+          />
+        </a>
+        <nav class="nav-links" id="menu-principal" aria-label="Navegação principal">
+          <% if (!usuarioLogado) { %>
+            <a href="/">Início</a>
+            <a href="/vagas">Vagas</a>
+            <a href="/cadastro">Cadastre-se</a>
+            <a class="btn btn-small login-button" href="/login">Entrar</a>
+          <% } else { %>
+            <%- include('./menu-usuario', { usuario: usuarioLogado }) %>
+            <a href="/preferencias/notificacoes">Preferências</a>
+            <a href="/notificacoes" class="nav-notifications">
+              Notificações
+              <% if (notificacoesNaoLidas > 0) { %>
+                <span
+                  class="notification-count"
+                  aria-label="<%= notificacoesNaoLidas %> notificações não lidas"
+                ><%= notificacoesNaoLidas > 99 ? '99+' : notificacoesNaoLidas %></span>
+              <% } %>
+            </a>
+            <a href="/conta/acesso">Conta e acesso</a>
+            <%- include('./avatar-usuario', {
+              usuario: usuarioLogado,
+              avatar: typeof avatarUsuario === 'undefined' ? {} : avatarUsuario
+            }) %>
+            <form action="/logout" method="post">
+              <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+              <button class="link-button" type="submit">Sair</button>
+            </form>
+          <% } %>
+        </nav>
+        <div class="nav-tools">
+          <button
+            class="theme-toggle"
+            type="button"
+            data-tema-toggle
+            aria-label="Tema escuro"
+            aria-pressed="false"
+            title="Ativar tema escuro"
+          >
+            <svg class="theme-icon theme-icon-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <circle cx="12" cy="12" r="4" />
+              <path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5" />
+            </svg>
+            <svg class="theme-icon theme-icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M20.5 13.5A9 9 0 0 1 10.5 3a9 9 0 1 0 10 10.5Z" />
+            </svg>
+            <span class="theme-label" data-tema-rotulo>Tema claro</span>
+          </button>
+          <% if (!usuarioLogado) { %>
+            <a class="btn btn-small login-button mobile-login" href="/login">Entrar</a>
+          <% } %>
+          <button
+            class="menu-toggle"
+            type="button"
+            data-menu
+            aria-label="Abrir menu"
+            aria-expanded="false"
+            aria-controls="menu-principal"
+          >
+            Menu
+          </button>
+        </div>
+      </div>
+    </header>
+    <main id="conteudo-principal" tabindex="-1" class="<%= typeof classeMain !== 'undefined' ? classeMain : '' %>">
+      <% if (mensagem) { %>
+        <div class="container">
+          <div class="alert <%= mensagem.tipo %>" role="alert"><%= mensagem.texto %></div>
+        </div>
+      <% } %>

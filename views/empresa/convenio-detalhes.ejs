@@ -1,0 +1,158 @@
+<%- include('../partials/cabecalho', { titulo: 'Detalhes do convênio' }) %>
+<%
+  const assinaturaEmpresa = convenio.assinaturas?.find((item) => item.papel === 'EMPRESA') || {};
+  const assinaturaInstituicao = convenio.assinaturas?.find((item) => item.papel === 'INSTITUICAO') || {};
+%>
+
+<section class="section">
+  <div class="container">
+    <a class="back-link" href="/empresa/convenios">← Voltar aos convênios</a>
+    <div class="section-heading page-heading-actions">
+      <div class="page-header">
+        <span class="eyebrow">Convênio institucional</span>
+        <h1>Convênio <%= convenio.numero || 'em preparação' %></h1>
+        <p class="muted"><%= formatarData(convenio.dataInicial) %> a <%= formatarData(convenio.dataFinal) %></p>
+      </div>
+      <span class="badge <%= convenio.status.toLowerCase() %>"><%= rotuloStatusConvenio(convenio.status) %></span>
+    </div>
+
+    <% if (erros?.geral) { %>
+    <div class="alert erro" role="alert"><%= erros.geral %></div>
+    <% } %>
+    <% if (convenio.justificativa) { %>
+    <div class="alert aviso"><strong>Justificativa:</strong> <%= convenio.justificativa %></div>
+    <% } %>
+
+    <div class="grid-2 agreement-detail-grid">
+      <article class="card">
+        <h2>Documento enviado para assinatura</h2>
+        <% if (convenio.documentoParaAssinatura?.caminho) { %>
+        <p><strong><%= convenio.documentoParaAssinatura.nomeOriginal %></strong></p>
+        <p class="muted">Disponibilizado em <%= formatarData(convenio.documentoParaAssinatura.dataEnvio || convenio.dataEnvioAssinatura) %>.</p>
+        <a class="btn" href="/convenios/<%= convenio._id %>/documento-assinatura"
+          >Baixar para assinar</a
+        >
+        <% } else { %>
+        <div class="empty compact-empty">O administrador ainda não anexou o documento.</div>
+        <% } %>
+      </article>
+
+      <article class="card">
+        <h2>Documento assinado devolvido pela empresa</h2>
+        <% if (convenio.pdfAssinado?.caminho) { %>
+        <p><strong><%= convenio.pdfAssinado.nomeOriginal %></strong></p>
+        <p class="muted">Recebido em <%= formatarData(convenio.pdfAssinado.dataRecebimento || convenio.dataRecebimentoDocumentoAssinado || convenio.pdfAssinado.dataEnvio) %>.</p>
+        <a class="btn btn-secondary" href="/convenios/<%= convenio._id %>/pdf-assinado"
+          >Visualizar PDF devolvido</a
+        >
+        <% } else { %>
+        <div class="empty compact-empty">Nenhum PDF assinado foi enviado.</div>
+        <% } %>
+      </article>
+    </div>
+
+    <article class="card spaced">
+      <h2>Assinaturas registradas</h2>
+      <div class="details-grid">
+        <div><strong>Empresa</strong><%= assinaturaEmpresa.nome ? formatarNomeProprio(assinaturaEmpresa.nome) : 'Pendente' %></div>
+        <div><strong>Função</strong><%= assinaturaEmpresa.funcao || '—' %></div>
+        <div><strong>Data</strong><%= formatarData(assinaturaEmpresa.dataAssinatura) %></div>
+        <div><strong>Instituição</strong><%= assinaturaInstituicao.nome ? formatarNomeProprio(assinaturaInstituicao.nome) : 'Pendente' %></div>
+        <div><strong>Função</strong><%= assinaturaInstituicao.funcao || '—' %></div>
+        <div><strong>Data</strong><%= formatarData(assinaturaInstituicao.dataAssinatura) %></div>
+      </div>
+    </article>
+
+    <% if (convenio.documentoParaAssinatura?.caminho && ['AGUARDANDO_ASSINATURAS','PENDENTE','REPROVADO'].includes(convenio.status)) { %>
+    <article class="card form-card spaced">
+      <h2><%= convenio.pdfAssinado?.caminho ? 'Substituir documento assinado' : 'Enviar documento assinado' %></h2>
+      <p class="muted">
+        A assinatura é feita fora do StartIF. Envie aqui somente o PDF final assinado.
+      </p>
+      <form
+        method="post"
+        action="/empresa/convenios/<%= convenio._id %>/documento-assinado"
+        enctype="multipart/form-data"
+        class="form-grid"
+      >
+        <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+        <div class="field full <%= erros?.pdfAssinado ? 'field-invalid' : '' %>">
+          <label for="pdfAssinado">PDF assinado *</label>
+          <input
+            id="pdfAssinado"
+            type="file"
+            name="pdfAssinado"
+            accept="application/pdf,.pdf"
+            required
+            aria-invalid="<%= erros?.pdfAssinado ? 'true' : 'false' %>"
+          />
+          <% if (erros?.pdfAssinado) { %><small class="field-error"><%= erros.pdfAssinado %></small
+          ><% } %>
+        </div>
+        <div class="field <%= erros?.signatarioEmpresaNome ? 'field-invalid' : '' %>">
+          <label for="signatarioEmpresaNome">Nome do signatário *</label>
+          <input
+            id="signatarioEmpresaNome"
+            name="signatarioEmpresaNome"
+            value="<%= valores?.signatarioEmpresaNome || assinaturaEmpresa.nome || '' %>"
+            required
+            aria-invalid="<%= erros?.signatarioEmpresaNome ? 'true' : 'false' %>"
+          />
+          <% if (erros?.signatarioEmpresaNome) { %><small class="field-error"><%= erros.signatarioEmpresaNome %></small
+          ><% } %>
+        </div>
+        <div class="field <%= erros?.signatarioEmpresaFuncao ? 'field-invalid' : '' %>">
+          <label for="signatarioEmpresaFuncao">Função do signatário *</label>
+          <input
+            id="signatarioEmpresaFuncao"
+            name="signatarioEmpresaFuncao"
+            value="<%= valores?.signatarioEmpresaFuncao || assinaturaEmpresa.funcao || '' %>"
+            required
+            aria-invalid="<%= erros?.signatarioEmpresaFuncao ? 'true' : 'false' %>"
+          />
+          <% if (erros?.signatarioEmpresaFuncao) { %><small class="field-error"><%= erros.signatarioEmpresaFuncao %></small
+          ><% } %>
+        </div>
+        <div class="field <%= erros?.signatarioEmpresaData ? 'field-invalid' : '' %>">
+          <label for="signatarioEmpresaData">Data da assinatura *</label>
+          <input
+            id="signatarioEmpresaData"
+            type="date"
+            name="signatarioEmpresaData"
+            value="<%= valores?.signatarioEmpresaData || (assinaturaEmpresa.dataAssinatura ? new Date(assinaturaEmpresa.dataAssinatura).toISOString().slice(0,10) : '') %>"
+            required
+            aria-invalid="<%= erros?.signatarioEmpresaData ? 'true' : 'false' %>"
+          />
+          <% if (erros?.signatarioEmpresaData) { %><small class="field-error"><%= erros.signatarioEmpresaData %></small
+          ><% } %>
+        </div>
+        <div class="field full">
+          <label for="observacoesDocumentoAssinado">Observações</label>
+          <textarea id="observacoesDocumentoAssinado" name="observacoesDocumentoAssinado">
+<%= valores?.observacoesDocumentoAssinado || convenio.pdfAssinado?.observacoes || '' %></textarea
+          >
+        </div>
+        <div class="field full"><button class="btn"><%= convenio.pdfAssinado?.caminho ? 'Substituir e reenviar' : 'Enviar para validação' %></button></div>
+      </form>
+    </article>
+    <% } %>
+
+    <article class="card spaced">
+      <h2>Histórico</h2>
+      <% if (convenio.historicoStatus?.length) { %>
+      <ol class="history-list">
+        <% [...convenio.historicoStatus].reverse().forEach((item) => { %>
+        <li>
+          <div><strong><%= rotuloStatusConvenio(item.status) %></strong><time><%= formatarData(item.data) %></time></div>
+          <p><%= item.observacao || 'Alteração registrada.' %></p>
+        </li>
+        <% }) %>
+      </ol>
+      <% } else { %>
+      <div class="empty compact-empty">Nenhuma alteração registrada.</div>
+      <% } %>
+    </article>
+  </div>
+</section>
+
+<%- include('../partials/rodape') %>

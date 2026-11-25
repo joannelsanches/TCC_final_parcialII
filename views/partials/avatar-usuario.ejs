@@ -1,0 +1,11 @@
+<%
+  const destinoAvatar = usuario.tipo === 'ESTUDANTE' ? '/estudante/perfil' : usuario.tipo === 'EMPRESA' ? '/empresa/perfil' : '/admin';
+  const nomeAvatar = formatarNomeProprio(usuario.nome);
+%>
+<a class="user-chip" href="<%= destinoAvatar %>" aria-label="Acessar perfil de <%= nomeAvatar %>" title="<%= nomeAvatar %>">
+  <% if (avatar.src) { %>
+    <img src="<%= avatar.src %>" alt="" width="42" height="42" referrerpolicy="no-referrer" data-avatar>
+  <% } %>
+  <span class="avatar-iniciais" aria-hidden="true" <%= avatar.src ? 'hidden' : '' %>><%= iniciais(usuario.nome) %></span>
+  <span class="sr-only"><%= nomeAvatar %></span>
+</a>

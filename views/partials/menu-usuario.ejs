@@ -1,0 +1,34 @@
+<% const menus = {
+  ESTUDANTE: [
+    ['/estudante', 'Painel'],
+    ['/vagas', 'Vagas'],
+    ['/estudante/candidaturas', 'Candidaturas'],
+    ['/termos', 'Termos'],
+    ['/avaliacoes', 'Avaliações'],
+    ['/estudante/historico', 'Histórico'],
+    ['/estudante/perfil', 'Perfil']
+  ],
+  EMPRESA: [
+    ['/empresa', 'Painel'],
+    ['/empresa/vagas', 'Vagas'],
+    ['/empresa/convenios', 'Convênios'],
+    ['/termos', 'Termos'],
+    ['/avaliacoes', 'Avaliações'],
+    ['/empresa/perfil', 'Perfil']
+  ],
+  ADMIN: [
+    ['/admin', 'Painel'],
+    ['/admin/usuarios', 'Usuários'],
+    ['/admin/empresas', 'Empresas'],
+    ['/admin/convenios', 'Convênios'],
+    ['/admin/cadastros', 'Cadastros'],
+    ['/admin/vagas', 'Vagas'],
+    ['/termos', 'Termos'],
+    ['/admin/relatorios', 'Relatórios'],
+    ['/admin/notificacoes', 'Notificar'],
+    ['/avaliacoes', 'Avaliações']
+  ]
+}; %>
+<% for (const [caminho, rotulo] of menus[usuario.tipo] || []) { %>
+  <a href="<%= caminho %>"><%= rotulo %></a>
+<% } %>

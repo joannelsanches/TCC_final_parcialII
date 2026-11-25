@@ -1,0 +1,64 @@
+<%- include('../partials/cabecalho', { titulo: 'Entrar', classeMain: 'auth-main' }) %>
+
+<section class="login-shell" aria-labelledby="login-titulo">
+  <div class="card login-card">
+    <span class="eyebrow">Acesso seguro</span>
+
+    <h1 id="login-titulo">Entrar no StartIF</h1>
+    <p class="muted">IFSul — Campus Bagé</p>
+
+    <% if (erros?.geral) { %>
+    <div class="alert erro" role="alert"><%= erros.geral %></div>
+    <% } %>
+
+    <form method="post" action="/login" class="stack">
+      <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" />
+
+      <div class="field <%= erros?.email ? 'field-invalid' : '' %>">
+        <label for="email">E-mail</label>
+
+        <input
+          id="email"
+          name="email"
+          type="email"
+          required
+          autocomplete="email"
+          value="<%= valores?.email || '' %>"
+          aria-invalid="<%= erros?.email ? 'true' : 'false' %>"
+          <% if (erros?.email) { %>aria-describedby="erro-email"<% } %>
+        />
+        <% if (erros?.email) { %><small class="field-error" id="erro-email"
+          ><%= erros.email %></small
+        ><% } %>
+      </div>
+
+      <div class="field <%= erros?.senha ? 'field-invalid' : '' %>">
+        <label for="senha">Senha</label>
+
+        <input
+          id="senha"
+          name="senha"
+          type="password"
+          required
+          autocomplete="current-password"
+          aria-invalid="<%= erros?.senha ? 'true' : 'false' %>"
+          <% if (erros?.senha) { %>aria-describedby="erro-senha"<% } %>
+        />
+        <% if (erros?.senha) { %><small class="field-error" id="erro-senha"
+          ><%= erros.senha %></small
+        ><% } %>
+      </div>
+
+      <button class="btn">Entrar</button>
+    </form>
+    <div class="auth-divider"><span>ou</span></div>
+    <a class="btn btn-google" href="/auth/google">Entrar com Google</a>
+
+    <p class="muted">
+      Ainda não tem conta?
+      <a href="/cadastro">Cadastre-se</a>.
+    </p>
+  </div>
+</section>
+
+<%- include('../partials/rodape') %>

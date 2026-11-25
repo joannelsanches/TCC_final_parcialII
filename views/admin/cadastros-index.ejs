@@ -1,0 +1,35 @@
+<%- include('../partials/cabecalho', { titulo: 'Cadastros institucionais' }) %>
+
+<section class="section">
+  <div class="container">
+    <div class="page-header page-header-left">
+      <span class="eyebrow">Configuração institucional</span>
+      <h1>Cadastros institucionais</h1>
+      <p class="muted">
+        Escolha o cadastro que deseja administrar. Cada área possui sua própria tela de criação,
+        edição e consulta.
+      </p>
+    </div>
+
+    <div class="grid institutional-grid">
+      <a class="card institutional-card" href="/admin/areas">
+        <span class="institutional-icon" aria-hidden="true">A</span>
+        <div>
+          <h2>Áreas de atuação</h2>
+          <p>Áreas relacionadas aos cursos e às oportunidades.</p>
+          <strong><%= contagens.areas %> cadastrada(s)</strong>
+        </div>
+      </a>
+      <a class="card institutional-card" href="/admin/cursos">
+        <span class="institutional-icon" aria-hidden="true">C</span>
+        <div>
+          <h2>Cursos</h2>
+          <p>Regras de estágio, jornada e vínculos institucionais.</p>
+          <strong><%= contagens.cursos %> cadastrado(s)</strong>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<%- include('../partials/rodape') %>

@@ -1,0 +1,17 @@
+<%- include('../partials/cabecalho', { titulo: 'Concluir cadastro' }) %>
+<section class="section">
+  <div class="container narrow">
+    <div class="card form-card stack">
+      <span class="eyebrow">Sua conta Google foi confirmada</span>
+      <h1>Como você vai usar o StartIF?</h1>
+      <p>Escolha seu perfil e complete os dados necessários. O StartIF atende exclusivamente ao IFSul — Campus Bagé.</p>
+      <% if (erros.geral) { %>
+        <p class="alert erro" role="alert"><%= erros.geral %></p>
+      <% } %>
+      <a class="btn" href="/auth/google/completar?tipo=ESTUDANTE">Sou estudante de Bagé</a>
+      <a class="btn btn-secondary" href="/auth/google/completar?tipo=EMPRESA">Represento uma empresa</a>
+      <p class="help">Estudantes precisam usar o e-mail institucional aceito pelo campus. O cadastro Google não substitui a validação da matrícula.</p>
+    </div>
+  </div>
+</section>
+<%- include('../partials/rodape') %>

@@ -1,0 +1,27 @@
+<details class="card spaced">
+  <summary>Corrigir seguro ou orientador do rascunho</summary>
+  <p class="muted">
+    A correção exige novo TCE assinado e nova apólice. As versões anteriores permanecem no
+    histórico.
+  </p>
+  <form method="post" action="/termos/<%= termo._id %>/corrigir" class="form-grid">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+    <% [['orientadorNome','Orientador',termo.professorOrientador?.nome,'text'],['orientadorEmail','E-mail do orientador',termo.professorOrientador?.email,'email'],['seguradora','Seguradora',termo.seguro?.seguradora,'text'],['numeroApolice','Apólice',termo.seguro?.numeroApolice,'text'],['coberturaMorteAcidental','Cobertura MAC (R$)',termo.seguro?.coberturaMorteAcidental,'number'],['coberturaInvalidez','Cobertura IPA (R$)',termo.seguro?.coberturaInvalidez,'number'],['seguroVigenciaInicio','Início do seguro',termo.seguro?.vigenciaInicio?.toISOString().slice(0,10),'date'],['seguroVigenciaFim','Fim do seguro',termo.seguro?.vigenciaFim?.toISOString().slice(0,10),'date']].forEach(([nome,label,valor,tipo]) => { %><label class="field"
+      ><%= label %><input
+        name="<%= nome %>"
+        type="<%= tipo %>"
+        value="<%= valor || '' %>"
+        <%- tipo === 'number' ? 'min="15000" step="0.01"' : '' %>
+        required /></label
+    ><% }) %>
+    <label class="field"
+      >Responsável pelo seguro<select name="seguroResponsavel">
+        <option value="CONCEDENTE">Concedente</option>
+        <option value="INSTITUICAO" <%= termo.seguro?.responsavel === 'INSTITUICAO' ? 'selected' : '' %>>
+          Instituição (obrigatório sem remuneração)
+        </option>
+      </select></label
+    >
+    <div class="field full"><button class="btn btn-secondary">Salvar correções</button></div>
+  </form>
+</details>

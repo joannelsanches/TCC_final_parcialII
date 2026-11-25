@@ -1,0 +1,14 @@
+node_modules/
+.env
+.env.*
+!.env.example
+uploads/
+artifacts/
+.cache/
+.npm/
+.vercel/
+*.log
+*.tgz
+.DS_Store
+Thumbs.db
+dados-mongo/
